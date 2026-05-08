@@ -1,5 +1,41 @@
 # Agents Thai Prompt Benchmark
 
+## Executive Summary
+
+We started with a simple question: does writing prompts in Thai cost more tokens than English when using coding agents? The answer turned out to depend entirely on which agent you use — and a policy prompt meant to help made things worse.
+
+We tested four variants (Thai direct, English direct, verbose policy, compact policy) across two codebases (tiny and medium-large) on two tools (Codex gpt-5.5 and Claude Code Sonnet). Three runs each, 36 total.
+
+**What we found:**
+
+- **English is not universally cheaper.** On Codex with a tiny repo, Thai is slightly cheaper. The direction flips on larger codebases — English saves 32% on Flask.
+- **Claude Code handles English far more efficiently than Thai** — consistently 46–52% fewer tokens — regardless of codebase size.
+- **Policy prompts always add cost on Codex.** Whether verbose (4 bullets) or compact (1 line), any additional instruction causes Codex to explore more aggressively. The compact policy is 98% above Thai direct on small repos.
+- **The compact policy works on Claude Code.** One short directive — "Use English for all reasoning. Do not carry long non-English text" — reduces tokens by 16% below Thai direct, without the scope explosion that the verbose policy triggers.
+- **The verbose policy (C) is the worst choice at scale for both tools.** It doubled Codex's token count on Flask and added 47% on Claude Code.
+
+If you need Thai input and use Claude Code, a single compact carry-constraint line saves 16%. If you can use English, it saves 46–52%. For Codex, skip the policies entirely.
+
+---
+
+## สรุปสำหรับผู้บริหาร
+
+เราเริ่มจากคำถามง่าย ๆ ว่า การเขียน prompt ภาษาไทยใช้ token มากกว่าภาษาอังกฤษไหม เมื่อใช้ coding agent? คำตอบขึ้นอยู่กับว่าใช้ agent ตัวไหน — และ policy prompt ที่ตั้งใจช่วยลด token กลับทำให้แย่ลง
+
+เราทดสอบ 4 แบบ (ไทยตรง, อังกฤษตรง, policy แบบละเอียด, policy แบบสั้น) บน 2 codebase (เล็กมากและกลาง-ใหญ่) ด้วย 2 เครื่องมือ (Codex gpt-5.5 และ Claude Code Sonnet) รวม 36 รัน
+
+**สิ่งที่ค้นพบ:**
+
+- **ภาษาอังกฤษไม่ได้ถูกกว่าเสมอไป** — บน Codex กับ repo เล็ก ๆ ภาษาไทยถูกกว่าเล็กน้อย แต่พอ repo ใหญ่ขึ้น (Flask) ภาษาอังกฤษถูกกว่า 32%
+- **Claude Code ประมวลผลภาษาอังกฤษมีประสิทธิภาพกว่าภาษาไทยมาก** — ใช้ token น้อยกว่า 46–52% อย่างสม่ำเสมอ ไม่ว่า codebase จะใหญ่แค่ไหน
+- **Policy prompt ทำให้ Codex แย่ลงเสมอ** — ไม่ว่าจะละเอียดหรือสั้น instruction เพิ่มเติมทำให้ Codex ทำงานหนักขึ้น compact policy ยังสูงกว่าไทยตรง 98% บน repo เล็ก
+- **Compact policy ได้ผลบน Claude Code** — คำสั่งสั้น ๆ หนึ่งบรรทัดว่า "ใช้ภาษาอังกฤษในการ reasoning และอย่าพา non-English text ยาว ๆ ผ่าน context" ลด token ได้ 16% ต่ำกว่าไทยตรง โดยไม่ทำให้ทำงานหนักขึ้น
+- **Verbose policy (C) เป็นตัวเลือกที่แย่ที่สุดบน codebase ขนาดใหญ่** — ทำให้ Codex ใช้ token เพิ่มเป็น 2 เท่าบน Flask และเพิ่ม 47% บน Claude Code
+
+ถ้าต้องใช้ภาษาไทยและใช้ Claude Code: เพิ่ม compact policy หนึ่งบรรทัดประหยัดได้ 16% ถ้าเปลี่ยนเป็นภาษาอังกฤษได้ประหยัด 46–52% สำหรับ Codex ข้าม policy ทั้งหมดไปเลย
+
+---
+
 A small shell benchmark for testing whether multilingual prompts, English prompts, or multilingual prompts with an English working-language policy produce different Codex usage/cost behavior.
 
 The core question is not only:
