@@ -66,17 +66,13 @@ def main() -> int:
             if event_type.startswith("error") or obj.get("error"):
                 errors += 1
 
-            # Codex JSONL shapes may evolve. Keep these counters best-effort.
-            item_type = get_nested(obj, ["item", "type"])
-            if item_type == "command_execution":
-                commands += 1
-            if item_type == "file_change":
-                file_changes += 1
-
-            if event_type in {"exec.command_begin", "exec.command_end"}:
-                commands += 1
-            if event_type in {"file_change", "patch_apply_begin", "patch_apply_end"}:
-                file_changes += 1
+            # Count only item.started to avoid doubling with item.completed.
+            if event_type == "item.started":
+                item_type = get_nested(obj, ["item", "type"])
+                if item_type == "command_execution":
+                    commands += 1
+                elif item_type == "file_change":
+                    file_changes += 1
 
     total_tokens = (
         usage_total["input_tokens"]
@@ -86,6 +82,7 @@ def main() -> int:
 
     row = {
         "file": path.name,
+        "tool": "codex",
         "events": events,
         "turn_completed": turn_completed,
         "input_tokens": usage_total["input_tokens"],

@@ -1,4 +1,5 @@
 bench/results/
+bench/repos/
 .DS_Store
 .env
 .env.*

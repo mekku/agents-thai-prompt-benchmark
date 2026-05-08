@@ -20,15 +20,42 @@ METRICS = [
     "errors",
 ]
 
+VARIANT_KEYS = ["a-thai", "b-english", "c-policy"]
+VARIANT_LABELS = {
+    "a-thai": "A Thai direct",
+    "b-english": "B English direct",
+    "c-policy": "C Thai + English policy",
+}
 
-def variant_from_filename(name: str) -> str:
-    if "a-thai" in name:
-        return "A Thai direct"
-    if "b-english" in name:
-        return "B English direct"
-    if "c-policy" in name:
-        return "C Thai + English policy"
-    return "Other"
+
+def parse_filename(name: str) -> tuple[str, str]:
+    """Return (repo_label, variant_key) from a result filename."""
+    # Strip timestamp prefix (YYYYMMDD-HHMMSS-)
+    base = name
+    for prefix in ("claude-",):
+        base = base.replace(prefix, "", 1)
+
+    # Try to extract a repo label: if name contains a known variant preceded
+    # by something, that something is the label.
+    # Pattern: [TS-][claude-][label-]<variant>-r<n>.csv
+    for vk in VARIANT_KEYS:
+        if vk in base:
+            idx = base.index(vk)
+            label_part = base[:idx].rstrip("-")
+            # Remove timestamp (first token before first real label)
+            parts = label_part.split("-")
+            # Timestamp is YYYYMMDD and HHMMSS — skip first two parts
+            non_ts = [p for p in parts if not (len(p) == 8 and p.isdigit()) and not (len(p) == 6 and p.isdigit())]
+            label = "-".join(non_ts).strip("-") or "benchmark-repo"
+            return label, vk
+    return "benchmark-repo", "other"
+
+
+def tool_from_row(row: dict[str, str], filename: str) -> str:
+    tool = row.get("tool", "")
+    if tool == "claude-code" or "claude-" in filename:
+        return "Claude Code"
+    return "Codex"
 
 
 def read_rows(results_dir: Path) -> list[dict[str, str]]:
@@ -38,38 +65,66 @@ def read_rows(results_dir: Path) -> list[dict[str, str]]:
             reader = csv.DictReader(f)
             for row in reader:
                 row["source_csv"] = p.name
+                repo_label, variant_key = parse_filename(p.name)
+                row["_repo"] = repo_label
+                row["_variant"] = variant_key
                 rows.append(row)
     return rows
 
 
-def to_int(row: dict[str, str], key: str) -> int:
+def to_float(row: dict[str, str], key: str) -> float:
     try:
-        return int(float(row.get(key, "0") or "0"))
+        return float(row.get(key, "0") or "0")
     except ValueError:
-        return 0
+        return 0.0
 
 
-def print_markdown_summary(rows: list[dict[str, str]]) -> None:
+def print_tool_table(tool: str, label: str, rows: list[dict[str, str]]) -> None:
     groups: dict[str, list[dict[str, str]]] = defaultdict(list)
     for row in rows:
-        groups[variant_from_filename(row.get("file", row.get("source_csv", "")))].append(row)
+        vk = row.get("_variant", "other")
+        groups[vk].append(row)
 
+    print(f"### {tool} — {label}")
+    print()
     print("| Variant | Runs | " + " | ".join(METRICS) + " |")
     print("|---|---:|" + "|".join(["---:"] * len(METRICS)) + "|")
 
-    for variant in ["A Thai direct", "B English direct", "C Thai + English policy", "Other"]:
-        rs = groups.get(variant, [])
+    for vk in VARIANT_KEYS:
+        rs = groups.get(vk, [])
         if not rs:
             continue
-        values = []
-        for metric in METRICS:
-            values.append(f"{mean(to_int(r, metric) for r in rs):.1f}")
-        print(f"| {variant} | {len(rs)} | " + " | ".join(values) + " |")
-
+        label_str = VARIANT_LABELS.get(vk, vk)
+        values = [f"{mean(to_float(r, m) for r in rs):,.1f}" for m in METRICS]
+        print(f"| {label_str} | {len(rs)} | " + " | ".join(values) + " |")
     print()
-    print("## Raw files")
-    for row in rows:
-        print(f"- `{row.get('source_csv')}`")
+
+
+def print_comparison(
+    codex_rows: list[dict[str, str]],
+    claude_rows: list[dict[str, str]],
+    label: str,
+) -> None:
+    def avg_total(rows: list[dict[str, str]], vk: str) -> float | None:
+        matched = [r for r in rows if r.get("_variant") == vk]
+        if not matched:
+            return None
+        return mean(to_float(r, "total_tokens") for r in matched)
+
+    print(f"### Total token comparison — {label}")
+    print()
+    print("| Variant | Codex | Claude Code | Delta |")
+    print("|---|---:|---:|---:|")
+    for vk in VARIANT_KEYS:
+        c = avg_total(codex_rows, vk)
+        cl = avg_total(claude_rows, vk)
+        if c is None or cl is None:
+            continue
+        delta = (cl - c) / c * 100
+        sign = "+" if delta >= 0 else ""
+        label_str = VARIANT_LABELS.get(vk, vk)
+        print(f"| {label_str} | {c:,.0f} | {cl:,.0f} | {sign}{delta:.1f}% |")
+    print()
 
 
 def main() -> int:
@@ -84,7 +139,26 @@ def main() -> int:
         print(f"No CSV files found in {results_dir}")
         return 1
 
-    print_markdown_summary(rows)
+    # Group by repo label
+    repos: dict[str, list[dict[str, str]]] = defaultdict(list)
+    for row in rows:
+        repos[row["_repo"]].append(row)
+
+    for repo_label, repo_rows in sorted(repos.items()):
+        codex_rows = [r for r in repo_rows if tool_from_row(r, r.get("source_csv", "")) == "Codex"]
+        claude_rows = [r for r in repo_rows if tool_from_row(r, r.get("source_csv", "")) == "Claude Code"]
+
+        if codex_rows:
+            print_tool_table("Codex (gpt-5.5)", repo_label, codex_rows)
+        if claude_rows:
+            print_tool_table("Claude Code (claude-sonnet-4-6)", repo_label, claude_rows)
+        if codex_rows and claude_rows:
+            print_comparison(codex_rows, claude_rows, repo_label)
+
+    print("## Raw files")
+    for row in rows:
+        print(f"- `{row.get('source_csv')}`")
+
     return 0
 
 

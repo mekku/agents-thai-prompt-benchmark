@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VARIANT="${1:?usage: ./bench/run-one.sh <variant-name> <prompt-file>}"
-PROMPT_FILE="${2:?usage: ./bench/run-one.sh <variant-name> <prompt-file>}"
+VARIANT="${1:?usage: ./bench/run-one.sh <variant-name> <prompt-file> [workdir]}"
+PROMPT_FILE="${2:?usage: ./bench/run-one.sh <variant-name> <prompt-file> [workdir]}"
+WORKDIR="${3:-$(pwd)}"
 
 if ! command -v codex >/dev/null 2>&1; then
   echo "error: codex CLI not found in PATH" >&2
@@ -21,16 +22,14 @@ OUT="bench/results/${TS}-${VARIANT}.jsonl"
 FINAL="bench/results/${TS}-${VARIANT}.final.md"
 CSV="bench/results/${TS}-${VARIANT}.csv"
 
-# Default benchmark is read-only to reduce noise.
-# Use --ignore-user-config and --ignore-rules to isolate this benchmark from local agent policies.
-# Remove those flags if you intentionally want to benchmark your real project-level rules.
+# --ignore-user-config and --ignore-rules isolate this run from local agent policies.
 codex exec \
   --json \
   --ephemeral \
   --sandbox read-only \
-  --ask-for-approval never \
   --ignore-user-config \
   --ignore-rules \
+  -C "$WORKDIR" \
   -o "$FINAL" \
   "$(cat "$PROMPT_FILE")" \
   > "$OUT"

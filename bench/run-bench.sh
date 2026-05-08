@@ -2,23 +2,27 @@
 set -euo pipefail
 
 RUNS="${1:-3}"
+WORKDIR="${2:-$(pwd)}"
+LABEL="${3:-}"
 
 if ! [[ "$RUNS" =~ ^[0-9]+$ ]] || [[ "$RUNS" -lt 1 ]]; then
   echo "error: RUNS must be a positive integer" >&2
   exit 2
 fi
 
+PREFIX="${LABEL:+${LABEL}-}"
+
 mkdir -p bench/results
 
 for i in $(seq 1 "$RUNS"); do
-  echo "=== Run $i / $RUNS : A Thai ==="
-  ./bench/run-one.sh "a-thai-r${i}" "bench/prompts/a-thai.md"
+  echo "=== Run $i / $RUNS : ${PREFIX}A Thai ==="
+  ./bench/run-one.sh "${PREFIX}a-thai-r${i}" "bench/prompts/a-thai.md" "$WORKDIR"
 
-  echo "=== Run $i / $RUNS : B English ==="
-  ./bench/run-one.sh "b-english-r${i}" "bench/prompts/b-english.md"
+  echo "=== Run $i / $RUNS : ${PREFIX}B English ==="
+  ./bench/run-one.sh "${PREFIX}b-english-r${i}" "bench/prompts/b-english.md" "$WORKDIR"
 
-  echo "=== Run $i / $RUNS : C Universal Policy ==="
-  ./bench/run-one.sh "c-policy-r${i}" "bench/prompts/c-universal-policy.md"
+  echo "=== Run $i / $RUNS : ${PREFIX}C Universal Policy ==="
+  ./bench/run-one.sh "${PREFIX}c-policy-r${i}" "bench/prompts/c-universal-policy.md" "$WORKDIR"
 done
 
 echo
