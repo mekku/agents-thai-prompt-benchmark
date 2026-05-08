@@ -16,6 +16,10 @@ We tested four variants (Thai direct, English direct, verbose policy, compact po
 
 If you need Thai input and use Claude Code, a single compact carry-constraint line saves 16%. If you can use English, it saves 46–52%. For Codex, skip the policies entirely.
 
+**On output quality:**
+
+All four variants completed the task in every run. But token savings are not always "free." The Thai prompt on Claude Code consistently produced shorter, more concise answers (~8 sentences, issue categories). The English prompt produced longer, more elaborated analysis with exact file paths and line counts (~16–22 sentences). On larger codebases, the gap widened further — Codex with a Thai prompt described Flask's problems in general patterns, while English elicited exact line counts (`app.py: 1,625 lines`, `test_basic.py: 1,970 lines`). The compact policy (D) was the best quality-per-token trade-off on Claude Code: specific, file-referenced, Thai reply, at lower cost than Thai direct. Verbose policy (C) produced the longest answers but at a cost that rarely justified the extra detail for a quick analysis task.
+
 ---
 
 ## สรุปสำหรับผู้บริหาร
@@ -33,6 +37,10 @@ If you need Thai input and use Claude Code, a single compact carry-constraint li
 - **Verbose policy (C) เป็นตัวเลือกที่แย่ที่สุดบน codebase ขนาดใหญ่** — ทำให้ Codex ใช้ token เพิ่มเป็น 2 เท่าบน Flask และเพิ่ม 47% บน Claude Code
 
 ถ้าต้องใช้ภาษาไทยและใช้ Claude Code: เพิ่ม compact policy หนึ่งบรรทัดประหยัดได้ 16% ถ้าเปลี่ยนเป็นภาษาอังกฤษได้ประหยัด 46–52% สำหรับ Codex ข้าม policy ทั้งหมดไปเลย
+
+**คุณภาพของผลลัพธ์:**
+
+ทุก variant ตอบครบ 5 จุดในทุกรัน แต่ token ที่ถูกกว่าไม่ได้หมายความว่าคุณภาพเท่ากันเสมอไป — prompt ภาษาไทยบน Claude Code ให้คำตอบสั้นกว่า (~8 ประโยค ระบุหมวดปัญหา) ขณะที่ภาษาอังกฤษให้ผลละเอียดกว่าพร้อม path ไฟล์และเลขบรรทัด (~16–22 ประโยค) บน Flask ช่องว่างนี้ชัดขึ้น — Codex ที่ใช้ prompt ไทยอธิบายปัญหาแบบ pattern ทั่วไป ขณะที่ภาษาอังกฤษระบุได้แม่นว่า `app.py` มี 1,625 บรรทัด `test_basic.py` มี 1,970 บรรทัด Compact policy (D) คือจุดสมดุลที่ดีที่สุดบน Claude Code: ระบุไฟล์และบรรทัดได้ ตอบเป็นภาษาไทย และถูกกว่า Thai direct 16% Verbose policy (C) ให้คำตอบยาวที่สุดแต่ความละเอียดนั้นแทบไม่คุ้มค่ากับ token ที่จ่ายเพิ่มสำหรับงานวิเคราะห์เบื้องต้น
 
 ---
 
@@ -183,6 +191,19 @@ The verbose 4-bullet policy reads as a directive to be thorough. Both agents exp
 |---|---|---|---|
 | Codex (`gpt-5.5`) | **B English** (large repos) | A Thai direct | Any policy |
 | Claude Code (Sonnet) | **B English** (always −46–52%) | **D compact policy** (−16%) | C verbose policy |
+
+#### Output quality
+
+All variants completed the task (5 issues identified) in every run. Token savings are not always quality-neutral.
+
+| Variant | Specificity | Length | Notes |
+|---|---|---:|---|
+| A Thai direct | Medium — file refs present, less elaboration | ~8–23 sentences | Concise; on large repos Thai prompts describe patterns without exact line counts |
+| B English direct | High — file paths, exact line numbers, structured reasoning | ~13–22 sentences | Consistently precise across repo sizes |
+| C Thai + verbose policy | High — very detailed, over-elaborated | ~45–78 sentences | Quality overkill for quick analysis; rarely worth the token cost |
+| D Thai + compact policy | High — file refs, specific, Thai reply | ~48–85 sentences | Best quality-per-token on Claude Code; specific without triggering excessive scope |
+
+Key observation: on the larger Flask codebase, Codex with a Thai prompt described problems in general patterns ("large files, naming overlap") while the English prompt cited exact line counts (`app.py: 1,625 lines`, `test_basic.py: 1,970 lines`). Part of Thai's lower token count on Claude Code reflects a shorter, more concise output — not pure language-handling efficiency.
 
 ---
 
