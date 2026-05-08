@@ -23,6 +23,9 @@ for i in $(seq 1 "$RUNS"); do
 
   echo "=== Run $i / $RUNS : ${PREFIX}C Universal Policy (Claude Code) ==="
   ./bench/run-one-claude.sh "${PREFIX}c-policy-r${i}" "bench/prompts/c-universal-policy.md" "$WORKDIR"
+
+  echo "=== Run $i / $RUNS : ${PREFIX}D Compact Policy (Claude Code) ==="
+  ./bench/run-one-claude.sh "${PREFIX}d-compact-r${i}" "bench/prompts/d-compact-policy.md" "$WORKDIR"
 done
 
 echo

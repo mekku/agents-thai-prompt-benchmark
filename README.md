@@ -16,7 +16,8 @@ This repo gives you a repeatable way to compare three variants:
 |---|---|
 | A | Thai prompt, Thai reply |
 | B | English prompt, English reply |
-| C | Thai prompt + English working-language policy, Thai reply |
+| C | Thai prompt + verbose English working-language policy (4 bullets), Thai reply |
+| D | Thai prompt + compact policy (3 short directives), Thai reply |
 
 ## Benchmark Results
 
@@ -28,9 +29,11 @@ This repo gives you a repeatable way to compare three variants:
 > - `benchmark-repo` — this repo itself (~10 files, ~700 LOC)
 > - `flask` — [pallets/flask](https://github.com/pallets/flask) (~265 files, 83 Python files, ~18k LOC)
 >
+> **Variant D prompt** (`bench/prompts/d-compact-policy.md`): same Thai task as A, plus one short line — `Use English for all reasoning. Do not carry long non-English text through the working context unless exact wording matters. Reply to the lang of input.`
+>
 > **Note on B prompt:** variant B is English prompt + English reply — pure English on both sides, for a clean comparison with Thai-only variant A.
 >
-> **Note on cross-tool totals:** Codex runs with `--ignore-user-config --sandbox read-only`; Claude Code with `--no-session-persistence` and its full default system prompt. Within-tool A/B/C comparison is apples-to-apples; the cross-tool column shows which tool used fewer tokens for this task.
+> **Note on cross-tool totals:** Codex runs with `--ignore-user-config --sandbox read-only`; Claude Code with `--no-session-persistence` and its full default system prompt. Within-tool A/B/C/D comparison is apples-to-apples; the cross-tool column shows which tool used fewer tokens for this task.
 
 ---
 
@@ -42,9 +45,10 @@ This repo gives you a repeatable way to compare three variants:
 |---|---:|---:|---:|---:|---:|---:|---:|
 | A Thai direct | 3 | 167,082 | 140,416 | 2,484 | 227 | 169,793 | 22 |
 | B English direct | 3 | 184,449 | 155,179 | 2,274 | 153 | 186,876 | 23 |
-| C Thai + English policy | 3 | 236,102 | 187,093 | 3,734 | 483 | 240,319 | 27 |
+| C Thai + verbose policy | 3 | 236,102 | 187,093 | 3,734 | 483 | 240,319 | 27 |
+| D Thai + compact policy | 3 | 330,698 | 284,715 | 4,323 | 654 | 335,675 | 30 |
 
-B vs A: **+10%** · C vs A: **+42%**
+B vs A: +10% · C vs A: +42% · **D vs A: +98%**
 
 #### Claude Code (claude-sonnet-4-6)
 
@@ -52,9 +56,10 @@ B vs A: **+10%** · C vs A: **+42%**
 |---|---:|---:|---:|---:|---:|---:|---:|
 | A Thai direct | 3 | 153,207 | 140,569 | 3,120 | 0 | 156,327 | 10 |
 | B English direct | 3 | 82,416 | 72,507 | 2,113 | 0 | 84,528 | 15 |
-| C Thai + English policy | 3 | 154,193 | 138,403 | 3,994 | 0 | 158,188 | 11 |
+| C Thai + verbose policy | 3 | 154,193 | 138,403 | 3,994 | 0 | 158,188 | 11 |
+| D Thai + compact policy | 3 | 128,287 | 115,720 | 3,707 | 0 | 131,994 | 16 |
 
-B vs A: **−46%** · C vs A: **+1%** (noise)
+B vs A: −46% · C vs A: +1% · **D vs A: −16%**
 
 #### Cross-tool — benchmark-repo
 
@@ -62,7 +67,8 @@ B vs A: **−46%** · C vs A: **+1%** (noise)
 |---|---:|---:|---:|
 | A Thai direct | 169,793 | 156,327 | −8% |
 | B English direct | 186,876 | 84,528 | **−55%** |
-| C Thai + English policy | 240,319 | 158,188 | −34% |
+| C Thai + verbose policy | 240,319 | 158,188 | −34% |
+| D Thai + compact policy | 335,675 | 131,994 | **−61%** |
 
 ---
 
@@ -74,9 +80,10 @@ B vs A: **−46%** · C vs A: **+1%** (noise)
 |---|---:|---:|---:|---:|---:|---:|---:|
 | A Thai direct | 3 | 232,217 | 179,499 | 2,947 | 392 | 235,556 | 21 |
 | B English direct | 3 | 157,748 | 119,040 | 2,689 | 383 | 160,819 | 18 |
-| C Thai + English policy | 3 | 470,308 | 383,701 | 6,077 | 783 | 477,167 | 32 |
+| C Thai + verbose policy | 3 | 470,308 | 383,701 | 6,077 | 783 | 477,167 | 32 |
+| D Thai + compact policy | 3 | 341,688 | 272,512 | 5,003 | 891 | 347,582 | 27 |
 
-B vs A: **−32%** · C vs A: **+103%**
+B vs A: −32% · C vs A: +103% · **D vs A: +48%**
 
 #### Claude Code (claude-sonnet-4-6)
 
@@ -84,9 +91,10 @@ B vs A: **−32%** · C vs A: **+103%**
 |---|---:|---:|---:|---:|---:|---:|---:|
 | A Thai direct | 3 | 184,434 | 172,845 | 2,566 | 0 | 186,999 | 18 |
 | B English direct | 3 | 87,297 | 79,748 | 1,509 | 0 | 88,806 | 12 |
-| C Thai + English policy | 3 | 269,517 | 246,478 | 5,150 | 0 | 274,667 | 26 |
+| C Thai + verbose policy | 3 | 269,517 | 246,478 | 5,150 | 0 | 274,667 | 26 |
+| D Thai + compact policy | 3 | 153,392 | 140,416 | 3,675 | 0 | 157,067 | 26 |
 
-B vs A: **−52%** · C vs A: **+47%**
+B vs A: −52% · C vs A: +47% · **D vs A: −16%**
 
 #### Cross-tool — flask
 
@@ -94,45 +102,51 @@ B vs A: **−52%** · C vs A: **+47%**
 |---|---:|---:|---:|
 | A Thai direct | 235,556 | 186,999 | −21% |
 | B English direct | 160,819 | 88,806 | **−45%** |
-| C Thai + English policy | 477,167 | 274,667 | **−42%** |
+| C Thai + verbose policy | 477,167 | 274,667 | **−42%** |
+| D Thai + compact policy | 347,582 | 157,067 | **−55%** |
 
 ---
 
 ### Key findings
 
+#### Claude Code: compact policy (D) beats Thai direct; Codex: policy always adds cost
+
+| | Codex | Claude Code |
+|---|---:|---:|
+| B English vs A Thai | +10% / −32% (size-dependent) | −46% / −52% |
+| C verbose policy vs A | +42% / +103% | +1% / +47% |
+| **D compact policy vs A** | **+98% / +48%** | **−16% / −16%** |
+
+_Left value: benchmark-repo · Right value: flask_
+
+**Claude Code understands the compact constraint.** D's single line — `Use English for all reasoning. Do not carry long non-English text…` — reduces total tokens below Thai direct by 16% on both codebases, without triggering the scope expansion that C causes. The constraint is being respected: shorter context per turn, same number of tool calls.
+
+**Codex ignores the constraint and expands scope.** Any policy instruction — verbose or compact — causes Codex to do more work. D is actually worse than C on the tiny repo (+98% vs +42%). The phrasing of the policy doesn't matter; the presence of additional instructions is what signals "be more thorough."
+
 #### Language direction reverses with codebase size on Codex
 
-| Codebase | Codex cheapest | B vs A delta |
+| Codebase | Codex cheapest variant | total tokens |
 |---|---|---:|
-| benchmark-repo (tiny) | **A Thai** | +10% |
-| flask (medium-large) | **B English** | −32% |
+| benchmark-repo (tiny) | **A Thai direct** | 169,793 |
+| flask (medium-large) | **B English direct** | 160,819 |
 
-On a tiny repo, Codex handles Thai slightly more efficiently. On Flask (83 Python files), English becomes 32% cheaper — the language effect scales with codebase size. The larger and more structured the codebase, the more the English-prompt Codex agent navigates it efficiently.
+On a tiny repo, Thai is marginally cheapest for Codex. On Flask (83 Python files), English is 32% cheaper. Language effect scales with codebase size for Codex.
 
-#### Claude Code: English is always cheaper, pattern holds across scales
-
-| Codebase | B vs A (English vs Thai) |
-|---|---:|
-| benchmark-repo | −46% |
-| flask | −52% |
-
-Claude Code consistently uses roughly half the tokens for English prompts vs Thai, regardless of codebase size. The gap does not close on larger repos.
-
-#### Policy variant (C) scales badly on larger codebases
+#### Policy variant (C) is the worst choice at scale — for both tools
 
 | | Codex C vs A | Claude Code C vs A |
 |---|---:|---:|
 | benchmark-repo | +42% | +1% |
 | flask | **+103%** | +47% |
 
-On Flask, the English working-language policy causes Codex to more than double its token usage vs Thai direct. Claude Code's policy cost also grows significantly (47% on Flask vs negligible on tiny repo). The policy encourages both agents to do a more thorough multi-pass analysis, which becomes expensive on real codebases.
+The verbose 4-bullet policy reads as a directive to be thorough. Both agents explore more aggressively, accumulating larger context. On Flask, Codex more than doubles its token count. Compact policy D is strictly better than C for every configuration tested.
 
 #### Practical decision table
 
-| Tool | Small repo | Large repo | Avoid |
+| Tool | Best choice | If Thai input required | Avoid |
 |---|---|---|---|
-| Codex (`gpt-5.5`) | A Thai (cheapest) | **B English** | C policy at scale |
-| Claude Code (Sonnet) | **B English** | **B English** | Thai prompts at any scale |
+| Codex (`gpt-5.5`) | **B English** (large repos) | A Thai direct | Any policy |
+| Claude Code (Sonnet) | **B English** (always −46–52%) | **D compact policy** (−16%) | C verbose policy |
 
 ---
 

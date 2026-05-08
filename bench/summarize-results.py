@@ -20,11 +20,12 @@ METRICS = [
     "errors",
 ]
 
-VARIANT_KEYS = ["a-thai", "b-english", "c-policy"]
+VARIANT_KEYS = ["a-thai", "b-english", "c-policy", "d-compact"]
 VARIANT_LABELS = {
     "a-thai": "A Thai direct",
     "b-english": "B English direct",
-    "c-policy": "C Thai + English policy",
+    "c-policy": "C Thai + verbose policy",
+    "d-compact": "D Thai + compact policy",
 }
 
 
