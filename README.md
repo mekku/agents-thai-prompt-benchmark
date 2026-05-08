@@ -88,6 +88,50 @@ This repo gives you a repeatable way to compare three variants:
 
 **The central question:** can a language policy let you keep Thai as your input language while the agent works more efficiently?
 
+### The actual prompts
+
+**A — Thai direct** (`bench/prompts/a-thai.md`)
+```
+ช่วยวิเคราะห์ repo นี้ แล้วหาจุดที่ควรปรับปรุง 5 จุด โดยเน้นเรื่องความชัดเจนของโครงสร้างไฟล์ การตั้งชื่อ และความเสี่ยงของโค้ด
+
+ตอบกลับเป็นภาษาไทยแบบสั้น กระชับ
+```
+_Analyze this repo, find 5 improvement areas focusing on file structure clarity, naming, and code risk. Reply briefly in Thai._
+
+---
+
+**B — English direct** (`bench/prompts/b-english.md`)
+```
+Analyze this repository and identify 5 improvement areas, focusing on file structure clarity, naming, and code risk.
+
+Reply briefly in English.
+```
+_Same task as A, entirely in English — no policy, no Thai._
+
+---
+
+**C — Thai + verbose policy** (`bench/prompts/c-universal-policy.md`)
+```
+ช่วยวิเคราะห์ repo นี้ แล้วหาจุดที่ควรปรับปรุง 5 จุด โดยเน้นเรื่องความชัดเจนของโครงสร้างไฟล์ การตั้งชื่อ และความเสี่ยงของโค้ด
+
+Follow this multilingual working policy:
+- Convert the user's request into a compact English working brief.
+- Use English for technical reasoning, planning, code analysis, TODOs, and implementation notes.
+- Do not carry long non-English text through the working context unless exact wording matters.
+- Reply to the user in Thai.
+```
+_Same Thai task as A, but with an explicit 4-step policy telling the agent to work in English internally._
+
+---
+
+**D — Thai + compact policy** (`bench/prompts/d-compact-policy.md`)
+```
+ช่วยวิเคราะห์ repo นี้ แล้วหาจุดที่ควรปรับปรุง 5 จุด โดยเน้นเรื่องความชัดเจนของโครงสร้างไฟล์ การตั้งชื่อ และความเสี่ยงของโค้ด
+
+Use English for all reasoning. Do not carry long non-English text through the working context unless exact wording matters. Reply to the lang of input.
+```
+_Same Thai task as A, but with a single-line hint instead of 4 bullets. Intentionally minimal to avoid triggering scope expansion._
+
 ## Benchmark Results
 
 > Run date: 2026-05-08 · Runs per variant: 3 · Codex CLI: 0.125.0 · Claude Code: 2.1.133
