@@ -1,6 +1,6 @@
 # Agents Thai Prompt Benchmark
 
-## Executive Summary
+## Summary
 
 We started with a simple question: does writing prompts in Thai cost more tokens than English when using coding agents? The answer turned out to depend entirely on which agent you use — and a policy prompt meant to help made things worse.
 
@@ -22,7 +22,7 @@ All four variants completed the task in every run. But token savings are not alw
 
 ---
 
-## สรุปสำหรับผู้บริหาร
+## สรุปภาพรวม
 
 เราเริ่มจากคำถามง่าย ๆ ว่า การเขียน prompt ภาษาไทยใช้ token มากกว่าภาษาอังกฤษไหม เมื่อใช้ coding agent? คำตอบขึ้นอยู่กับว่าใช้ agent ตัวไหน — และ policy prompt ที่ตั้งใจช่วยลด token กลับทำให้แย่ลง
 
