@@ -6,26 +6,28 @@ If you use AI coding agents and write prompts in Thai, you've probably wondered:
 
 **How we tested it**
 
-We gave two tools (OpenAI Codex and Claude Code) the same repo analysis task in four ways: Thai only, English only, Thai with a multi-step language policy, and Thai with a one-line compact policy. We ran each variant 3 times on a tiny repo (this one) and a real medium-sized project (Flask). 36 runs total.
+We gave two tools (OpenAI Codex and Claude Code) the same repo analysis task in four ways: Thai only, English only, Thai with a multi-step language policy, and Thai with a one-line compact policy. We ran each variant 3 times on three codebases: a tiny repo (this one), a medium-sized English project (Flask), and a real Thai-developer app with Thai text embedded in source files (electinth/election-live). 72 runs total.
 
 **What we discovered**
 
-The two tools behave completely differently:
+The two tools behave completely differently — and the type of codebase matters too:
 
-- On **Codex**, Thai is actually cheaper than English on small repos. But the bigger the codebase gets, the more English pulls ahead — saving 32% on Flask. Adding any policy instruction makes things worse regardless of how it's written.
-- On **Claude Code**, English is consistently half the token cost of Thai, no matter the repo size. A single short policy line ("Use English for all reasoning. Don't carry long non-English text.") brings Thai down by 16% — but it only works on Claude Code, not Codex.
-- The detailed 4-bullet policy we tried (variant C) backfired badly on both tools. It more than doubled Codex's cost on Flask. More instructions = the agent thinks it should do more work, not less.
+- On **Codex with English-source repos**, Thai is slightly cheaper on small repos but English saves 32% at Flask scale. Adding any policy instruction makes things worse regardless of how it's written.
+- On **Codex with Thai-content repos** (election-live), the pattern flips: English is actually MORE expensive than Thai (+13%). When Thai strings are in the source files, a Thai prompt handles them more naturally.
+- On **Claude Code with English-source repos**, English is consistently half the token cost of Thai (46–52% savings). A single compact policy line cuts Thai's cost by 16%.
+- On **Claude Code with Thai-content repos**, language barely matters — A, B, and C all land within 2% of each other at ~44k tokens. The compact policy (D) backfires here (+70%), probably because telling it "don't carry Thai" causes it to open more files to understand Thai it's trying to skip.
+- The detailed 4-bullet policy (C) was consistently the worst or near-worst choice on every codebase and both tools.
 
 **Does cheaper mean worse output?**
 
-Not always — but sometimes yes. Thai prompts on Claude Code gave shorter, more concise answers. English prompts gave more detailed analysis with exact file names and line numbers. On larger codebases the gap was clearest: Thai got general advice like "this file is too big", English got specific facts like "`app.py` has 1,625 lines, `test_basic.py` has 1,970 lines." The one-line compact policy (D) hit the sweet spot for Claude Code — specific answers, Thai reply, lower cost than Thai alone.
+Not always — but sometimes yes. Thai prompts on Claude Code gave shorter, more concise answers. English prompts gave more detailed analysis with exact file names and line numbers. On larger codebases the gap was clearest: Thai got general advice like "this file is too big", English got specific facts like "`app.py` has 1,625 lines, `test_basic.py` has 1,970 lines." The one-line compact policy (D) hits the sweet spot for Claude Code on English-source repos — specific answers, Thai reply, lower cost than Thai alone. But it doesn't help on Thai-content repos.
 
 **Bottom line**
 
-| | Best prompt | If you need Thai |
+| | English-source repo | Thai-annotated repo |
 |---|---|---|
-| Codex | English on large repos, Thai on small | Thai direct, no policy |
-| Claude Code | English (saves ~50%) | One-line compact policy (saves 16%) |
+| Codex | English on large repos, Thai on small | Thai direct (English costs more) |
+| Claude Code | English saves ~50%; D saves 16% with Thai | Any variant works — skip D |
 
 ---
 
@@ -35,26 +37,28 @@ Not always — but sometimes yes. Thai prompts on Claude Code gave shorter, more
 
 **วิธีที่เราทดสอบ**
 
-เราให้ AI สองตัว (OpenAI Codex และ Claude Code) วิเคราะห์ repo เดียวกัน ด้วย 4 วิธี: ภาษาไทยล้วน, ภาษาอังกฤษล้วน, ไทย + policy แบบละเอียด 4 ข้อ และไทย + policy แบบสั้นหนึ่งบรรทัด รันละ 3 ครั้ง บน 2 codebase (repo เล็ก ๆ ของเราเอง กับ Flask ซึ่งเป็นโปรเจกต์จริงขนาดกลาง) รวม 36 รัน
+เราให้ AI สองตัว (OpenAI Codex และ Claude Code) วิเคราะห์ repo เดียวกัน ด้วย 4 วิธี: ภาษาไทยล้วน, ภาษาอังกฤษล้วน, ไทย + policy แบบละเอียด 4 ข้อ และไทย + policy แบบสั้นหนึ่งบรรทัด รันละ 3 ครั้ง บน 3 codebase ได้แก่ repo เล็ก ๆ ของเราเอง, Flask (โปรเจกต์อังกฤษล้วนขนาดกลาง) และ election-live (แอป React จริงของนักพัฒนาไทย ที่มี string ภาษาไทยฝังอยู่ในไฟล์โค้ด JSX) รวม 72 รัน
 
 **สิ่งที่ค้นพบ**
 
-สองเครื่องมือนี้ตอบสนองต่างกันโดยสิ้นเชิง:
+สองเครื่องมือตอบสนองต่างกัน และประเภทของ codebase ก็มีผลด้วย:
 
-- **Codex** — บน repo เล็ก ภาษาไทยถูกกว่าภาษาอังกฤษเล็กน้อย แต่พอ codebase ใหญ่ขึ้น ภาษาอังกฤษชนะชัดเจน ประหยัดได้ 32% บน Flask การใส่ policy เพิ่มเข้าไป ไม่ว่าสั้นหรือยาว ทำให้แพงขึ้นเสมอ
-- **Claude Code** — ภาษาอังกฤษใช้ token ครึ่งหนึ่งของภาษาไทยอย่างสม่ำเสมอ ไม่ว่า repo จะใหญ่แค่ไหน policy สั้น ๆ หนึ่งบรรทัดช่วยลดต้นทุนของ prompt ไทยได้ 16% แต่วิธีนี้ใช้ได้กับ Claude Code เท่านั้น ไม่ใช่ Codex
-- **Policy แบบละเอียด 4 ข้อ (variant C)** ให้ผลเสียกับทั้งสองเครื่องมือ ทำให้ Codex จ่ายเพิ่มเป็น 2 เท่าบน Flask เพราะ AI ตีความว่า "มี instruction เพิ่ม = ต้องทำงานละเอียดขึ้น"
+- **Codex บน repo ที่เป็นภาษาอังกฤษล้วน** — ไทยถูกกว่าบน repo เล็ก แต่อังกฤษถูกกว่า 32% บน Flask การใส่ policy ทุกรูปแบบทำให้แพงขึ้นเสมอ
+- **Codex บน repo ที่มีโค้ดภาษาไทย (election-live)** — พลิกกลับ: ภาษาอังกฤษแพงกว่าไทย 13% เพราะ AI ต้องประมวล string ไทยในไฟล์โค้ดในฐานะ "ภาษาต่างประเทศ"
+- **Claude Code บน repo ภาษาอังกฤษล้วน** — ภาษาอังกฤษใช้ token ครึ่งหนึ่งของไทยอย่างสม่ำเสมอ Policy สั้นหนึ่งบรรทัดช่วยลด 16% เมื่อต้องใช้ไทย
+- **Claude Code บน repo ที่มีโค้ดไทย** — ทุก variant ใช้ token ใกล้เคียงกันมาก (ต่างกันแค่ 2%) ที่ ~44k token Policy สั้น (D) กลับทำให้แพงขึ้น 70% ไม่ใช่ถูกลง
+- **Policy แบบ 4 ข้อ (C)** แย่ที่สุดหรือแย่ใกล้เคียงที่สุดในทุก codebase และทุกเครื่องมือ
 
 **ถูกกว่า = คุณภาพแย่ลงไหม**
 
-ไม่เสมอไป แต่บางครั้งก็ใช่ Prompt ภาษาไทยบน Claude Code ให้คำตอบสั้นและกระชับกว่า ส่วนภาษาอังกฤษให้ผลละเอียดพร้อมชื่อไฟล์และเลขบรรทัดชัดเจน บน Flask เห็นชัดที่สุด: ไทยบอกแบบกว้าง ๆ ว่า "ไฟล์นี้ใหญ่เกินไป" แต่อังกฤษบอกได้เลยว่า "`app.py` มี 1,625 บรรทัด `test_basic.py` มี 1,970 บรรทัด" Policy สั้น (D) คือจุดลงตัวที่ดีที่สุดสำหรับ Claude Code คำตอบละเอียด ตอบเป็นภาษาไทย และถูกกว่า Thai direct 16%
+ไม่เสมอไป แต่บางครั้งก็ใช่ Prompt ภาษาไทยบน Claude Code ให้คำตอบสั้นและกระชับกว่า ส่วนภาษาอังกฤษให้ผลละเอียดพร้อมชื่อไฟล์และเลขบรรทัดชัดเจน บน Flask เห็นชัดที่สุด ส่วน policy สั้น (D) ดีที่สุดบน repo ภาษาอังกฤษ แต่ไม่ควรใช้บน repo ที่มีโค้ดภาษาไทย
 
 **สรุปสั้น ๆ**
 
-| | Prompt ที่ดีที่สุด | ถ้าต้องใช้ภาษาไทย |
+| | repo ภาษาอังกฤษล้วน | repo ที่มีโค้ดภาษาไทย |
 |---|---|---|
-| Codex | อังกฤษ (repo ใหญ่), ไทย (repo เล็ก) | ไทยตรง ไม่ต้องใส่ policy |
-| Claude Code | อังกฤษ (ประหยัด ~50%) | Policy สั้นหนึ่งบรรทัด (ประหยัด 16%) |
+| Codex | อังกฤษ (repo ใหญ่), ไทย (repo เล็ก) | ไทยตรง (อังกฤษแพงกว่า) |
+| Claude Code | อังกฤษ (~50%); D ถ้าต้องใช้ไทย (-16%) | ใช้ได้ทุก variant ยกเว้น D |
 
 ---
 
@@ -134,13 +138,14 @@ _Same Thai task as A, but with a single-line hint instead of 4 bullets. Intentio
 
 ## Benchmark Results
 
-> Run date: 2026-05-08 · Runs per variant: 3 · Codex CLI: 0.125.0 · Claude Code: 2.1.133
+> Run dates: 2026-05-08 (benchmark-repo, flask) · 2026-05-09 (election-live) · Runs per variant: 3 · Codex CLI: 0.125.0 · Claude Code: 2.1.133
 >
 > **Tools:** Codex (`gpt-5.5`, reasoning effort: medium) · Claude Code (`claude-sonnet-4-6`)
 >
 > **Codebases tested:**
-> - `benchmark-repo` — this repo itself (~10 files, ~700 LOC)
-> - `flask` — [pallets/flask](https://github.com/pallets/flask) (~265 files, 83 Python files, ~18k LOC)
+> - `benchmark-repo` — this repo itself (~10 files, ~700 LOC) — English source
+> - `flask` — [pallets/flask](https://github.com/pallets/flask) (~265 files, 83 Python files, ~18k LOC) — English source
+> - `election-live` — [electinth/election-live](https://github.com/electinth/election-live) (~81 JS files, React/Gatsby) — **Thai strings in source code**
 >
 > **Variant D prompt** (`bench/prompts/d-compact-policy.md`): same Thai task as A, plus one short line — `Use English for all reasoning. Do not carry long non-English text through the working context unless exact wording matters. Reply to the lang of input.`
 >
@@ -220,6 +225,43 @@ B vs A: −52% · C vs A: +47% · **D vs A: −16%**
 
 ---
 
+### Codebase: election-live (~81 JS files, Thai strings in source)
+
+> [electinth/election-live](https://github.com/electinth/election-live) — React/Gatsby app used during Thailand's 2019 general election. Thai string literals embedded directly in JSX components, Thai paragraphs in page source files.
+
+#### Codex (gpt-5.5)
+
+| Variant | Runs | input_tokens | cached_input_tokens | output_tokens | reasoning_output_tokens | total_tokens | commands |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| A Thai direct | 3 | 209,304 | 164,181 | 2,670 | 247 | 212,221 | 22 |
+| B English direct | 3 | 236,841 | 195,328 | 3,032 | 308 | 240,181 | 25 |
+| C Thai + verbose policy | 3 | 462,271 | 394,965 | 5,440 | 748 | 468,459 | 34 |
+| D Thai + compact policy | 3 | 373,677 | 313,301 | 4,921 | 780 | 379,377 | 32 |
+
+**B vs A: +13%** · C vs A: +121% · D vs A: +79%
+
+#### Claude Code (claude-sonnet-4-6)
+
+| Variant | Runs | input_tokens | cached_input_tokens | output_tokens | reasoning_output_tokens | total_tokens | commands |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| A Thai direct | 3 | 43,342 | 37,663 | 1,360 | 0 | 44,702 | 35 |
+| B English direct | 3 | 42,355 | 37,488 | 826 | 0 | 43,181 | 31 |
+| C Thai + verbose policy | 3 | 43,570 | 37,731 | 2,198 | 0 | 45,768 | 37 |
+| D Thai + compact policy | 3 | 73,443 | 65,210 | 2,645 | 0 | 76,088 | 41 |
+
+B vs A: −3% · C vs A: +2% · **D vs A: +70%**
+
+#### Cross-tool — election-live
+
+| Variant | Codex | Claude Code | Delta |
+|---|---:|---:|---:|
+| A Thai direct | 212,221 | 44,702 | **−79%** |
+| B English direct | 240,181 | 43,181 | **−82%** |
+| C Thai + verbose policy | 468,459 | 45,768 | **−90%** |
+| D Thai + compact policy | 379,377 | 76,088 | **−80%** |
+
+---
+
 ### Key findings
 
 #### Visual comparison
@@ -227,26 +269,26 @@ B vs A: −52% · C vs A: +47% · **D vs A: −16%**
 **Claude Code — total tokens per variant (lower is better)**
 
 ```
-benchmark-repo (~10 files)                        flask (~18k LOC)
+benchmark-repo (~10 files)                        flask (~18k LOC)                     election-live (~81 JS files, Thai in src)
 
-A Thai direct     ████████████████████  156,327   ████████████████████████  186,999
-B English direct  ██████████            84,528 ✓  ████████████               88,806 ✓
-C Verbose policy  ████████████████████  158,188   ████████████████████████████████████ 274,667 ✗
-D Compact policy  █████████████████    131,994    ████████████████████       157,067
+A Thai direct     ████████████████████  156,327   ████████████████████████  186,999    ████████          44,702
+B English direct  ██████████            84,528 ✓  ████████████               88,806 ✓  ████████          43,181 ≈
+C Verbose policy  ████████████████████  158,188   ████████████████████████████████████ 274,667 ✗  ████████  45,768 ≈
+D Compact policy  █████████████████    131,994    ████████████████████       157,067    ██████████████    76,088 ✗
 ```
-_B saves ~50% vs A on both codebases. D saves 16%. C nearly matches A on small repos but costs 47% more on large._
+_English saves ~50% on pure-English repos (Flask, benchmark-repo). On a Thai-content repo (election-live): A/B/C are nearly flat, D backfires._
 
 **Codex — total tokens per variant (lower is better)**
 
 ```
-benchmark-repo (~10 files)                        flask (~18k LOC)
+benchmark-repo (~10 files)                        flask (~18k LOC)                     election-live (~81 JS files, Thai in src)
 
-A Thai direct     █████████████████  169,793      ████████████████████████  235,556
-B English direct  ██████████████████ 186,876      ████████████████          160,819 ✓
-C Verbose policy  ███████████████████████ 240,319 ████████████████████████████████████████████████ 477,167 ✗
-D Compact policy  ████████████████████████████████████ 335,675 ✗  ██████████████████████████████████ 347,582 ✗
+A Thai direct     █████████████████  169,793      ████████████████████████  235,556    █████████████████  212,221
+B English direct  ██████████████████ 186,876      ████████████████          160,819 ✓  ██████████████████ 240,181 ✗ ← English costs MORE
+C Verbose policy  ███████████████████████ 240,319 ████████████████████████████████████████████████ 477,167 ✗  ████████████████████████████████████ 468,459 ✗
+D Compact policy  ████████████████████████████████████ 335,675 ✗  ██████████████████████████████████ 347,582 ✗  █████████████████████████████ 379,377 ✗
 ```
-_Codex behaves opposite to Claude Code. Any policy line = more scope = more tokens._
+_Codex: any policy always adds cost. On election-live, English (B) is MORE expensive than Thai (A) — the language-efficiency assumption flips on Thai-content repos._
 
 ---
 
@@ -282,12 +324,29 @@ On a tiny repo, Thai is marginally cheapest for Codex. On Flask (83 Python files
 
 The verbose 4-bullet policy reads as a directive to be thorough. Both agents explore more aggressively, accumulating larger context. On Flask, Codex more than doubles its token count. Compact policy D is strictly better than C for every configuration tested.
 
+#### Thai-content repos flip the language-efficiency pattern
+
+The election-live results break the rules established by Flask and benchmark-repo (both pure-English codebases):
+
+| Finding | Pure-English repos | Thai-content repo (election-live) |
+|---|---|---|
+| Codex B vs A | −32% to +10% | **+13% (English costs MORE)** |
+| Claude Code B vs A | −46% to −52% | **−3% (nearly flat)** |
+| Claude Code D vs A | −16% | **+70% (D backfires)** |
+| Claude Code total tokens | 156k–187k | **44k (4× cheaper overall)** |
+
+**Why Codex flips:** When the source files contain Thai, a Thai prompt lets Codex read and carry that content naturally. Switching to English forces it to process the Thai strings it reads as "foreign" content, adding translation overhead.
+
+**Why Claude Code flattens:** Claude Code is very efficient at reading JS/React files, skipping irrelevant paths, and only summarizing what it needs. It reaches a similar result (~44k tokens) regardless of prompt language. There's less context carry to compress.
+
+**Why D backfires on Claude Code:** The compact policy says "don't carry long non-English text." On a repo where JS files contain Thai string literals, this may cause the agent to open more files to understand the Thai it is trying not to carry — more commands (41 vs 35), more total tokens.
+
 #### Practical decision table
 
-| Tool | Best choice | If Thai input required | Avoid |
-|---|---|---|---|
-| Codex (`gpt-5.5`) | **B English** (large repos) | A Thai direct | Any policy |
-| Claude Code (Sonnet) | **B English** (always −46–52%) | **D compact policy** (−16%) | C verbose policy |
+| Tool | Pure-English repo | Thai-annotated repo |
+|---|---|---|
+| Codex | **B English** (large repos) · A Thai (small repos) | **A Thai direct** — English costs more here |
+| Claude Code | **B English** (saves 46–52%) | **A, B, or C** — nearly equal; avoid D |
 
 #### Output quality
 
