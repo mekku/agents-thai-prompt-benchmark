@@ -1,13 +1,7 @@
 # Agents Thai Prompt Benchmark
 
-**Variants tested**
-
-| | Prompt | Hypothesis |
-|---|---|---|
-| **A** | Thai → Thai | Baseline: does the agent naturally carry Thai through its working context? |
-| **B** | English → English | Does a full language switch cut tokens? Pure language effect, no other variables. |
-| **C** | Thai + 4-bullet policy → Thai | Can an explicit "reason in English" instruction reduce overhead — or does more instruction = more work? |
-| **D** | Thai + 1-line hint → Thai | Same goal as C, minimal instruction: can one line work without signaling "be more thorough"? |
+Does writing prompts in Thai cost more tokens than English when using AI coding agents — and can a language policy close the gap?
+This repo benchmarks four prompt variants (A–D) across two tools and three codebases to find out.
 
 **Codebases tested**
 
