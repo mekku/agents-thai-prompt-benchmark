@@ -1,12 +1,25 @@
 # Agents Thai Prompt Benchmark
 
+A benchmark measuring how prompt language affects AI coding agent token usage — across two tools, three codebases, and four variants.
+
+| Variant | Prompt | Reply | Design intent |
+|---|---|---|---|
+| **A** | Thai task only | Thai | Baseline — no language instruction |
+| **B** | English task only | English | Pure language switch |
+| **C** | Thai task + verbose 4-bullet "reason in English" policy | Thai | Explicit policy, more instruction |
+| **D** | Thai task + single-line compact policy | Thai | Minimal hint, same goal as C |
+
+**The question:** does prompt language — or a language policy — change how many tokens an agent uses to complete the same task?
+
+---
+
 ## Summary
 
 If you use AI coding agents and write prompts in Thai, you've probably wondered: does Thai cost more tokens than English? We ran a benchmark to find out — and the answer surprised us.
 
 **How we tested it**
 
-We gave two tools (OpenAI Codex and Claude Code) the same repo analysis task in four ways: Thai only, English only, Thai with a multi-step language policy, and Thai with a one-line compact policy. We ran each variant 3 times on three codebases: a tiny repo (this one), a medium-sized English project (Flask), and a real Thai-developer app with Thai text embedded in source files (electinth/election-live). 72 runs total.
+We gave two tools (OpenAI Codex and Claude Code) the same repo analysis task four ways — **A** Thai only, **B** English only, **C** Thai with a verbose 4-bullet policy, **D** Thai with a one-line compact policy. We ran each variant 3 times on three codebases: a tiny repo (this one), a medium-sized English project (Flask), and a real Thai-developer app with Thai text embedded in source files (electinth/election-live). 72 runs total.
 
 **What we discovered**
 
@@ -37,7 +50,7 @@ Not always — but sometimes yes. Thai prompts on Claude Code gave shorter, more
 
 **วิธีที่เราทดสอบ**
 
-เราให้ AI สองตัว (OpenAI Codex และ Claude Code) วิเคราะห์ repo เดียวกัน ด้วย 4 วิธี: ภาษาไทยล้วน, ภาษาอังกฤษล้วน, ไทย + policy แบบละเอียด 4 ข้อ และไทย + policy แบบสั้นหนึ่งบรรทัด รันละ 3 ครั้ง บน 3 codebase ได้แก่ repo เล็ก ๆ ของเราเอง, Flask (โปรเจกต์อังกฤษล้วนขนาดกลาง) และ election-live (แอป React จริงของนักพัฒนาไทย ที่มี string ภาษาไทยฝังอยู่ในไฟล์โค้ด JSX) รวม 72 รัน
+เราให้ AI สองตัว (OpenAI Codex และ Claude Code) วิเคราะห์ repo เดียวกัน ด้วย 4 วิธี ได้แก่ **A** ภาษาไทยล้วน, **B** ภาษาอังกฤษล้วน, **C** ไทย + policy แบบละเอียด 4 ข้อ และ **D** ไทย + policy แบบสั้นหนึ่งบรรทัด รันละ 3 ครั้ง บน 3 codebase ได้แก่ repo เล็ก ๆ ของเราเอง, Flask (โปรเจกต์อังกฤษล้วนขนาดกลาง) และ election-live (แอป React จริงของนักพัฒนาไทย ที่มี string ภาษาไทยฝังอยู่ในไฟล์โค้ด JSX) รวม 72 รัน
 
 **สิ่งที่ค้นพบ**
 
