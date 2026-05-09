@@ -1,11 +1,21 @@
 # Agents Thai Prompt Benchmark
 
+**Variants tested**
+
 | | Prompt | Hypothesis |
 |---|---|---|
 | **A** | Thai → Thai | Baseline: does the agent naturally carry Thai through its working context? |
 | **B** | English → English | Does a full language switch cut tokens? Pure language effect, no other variables. |
 | **C** | Thai + 4-bullet policy → Thai | Can an explicit "reason in English" instruction reduce overhead — or does more instruction = more work? |
 | **D** | Thai + 1-line hint → Thai | Same goal as C, minimal instruction: can one line work without signaling "be more thorough"? |
+
+**Codebases tested**
+
+| Codebase | Size | Source language |
+|---|---|---|
+| `benchmark-repo` | ~10 files, ~700 LOC | English — this repo |
+| `flask` | ~265 files, ~18k LOC | English — [pallets/flask](https://github.com/pallets/flask) |
+| `election-live` | ~81 JS files | Thai strings in source — [electinth/election-live](https://github.com/electinth/election-live) |
 
 ---
 
@@ -15,7 +25,14 @@
 
 **วิธีที่เราทดสอบ**
 
-เราให้ AI สองตัว (OpenAI Codex และ Claude Code) วิเคราะห์ repo เดียวกัน ด้วย 4 วิธี ได้แก่ **A** ภาษาไทยล้วน, **B** ภาษาอังกฤษล้วน, **C** ไทย + policy แบบละเอียด 4 ข้อ และ **D** ไทย + policy แบบสั้นหนึ่งบรรทัด รันละ 3 ครั้ง บน 3 codebase ได้แก่ repo เล็ก ๆ ของเราเอง, Flask (โปรเจกต์อังกฤษล้วนขนาดกลาง) และ election-live (แอป React จริงของนักพัฒนาไทย ที่มี string ภาษาไทยฝังอยู่ในไฟล์โค้ด JSX) รวม 72 รัน
+| | Prompt | สิ่งที่ทดสอบ |
+|---|---|---|
+| **A** | ไทย → ไทย | Baseline: agent พา context ภาษาไทยไปมากแค่ไหนโดยธรรมชาติ? |
+| **B** | อังกฤษ → อังกฤษ | ถ้าเปลี่ยนภาษาทั้งหมดเป็นอังกฤษ token ลดลงไหม? |
+| **C** | ไทย + policy 4 ข้อ → ไทย | instruction ชัดเจนช่วยลด overhead ได้ไหม — หรือ instruction เพิ่ม = งานเพิ่ม? |
+| **D** | ไทย + hint 1 บรรทัด → ไทย | เป้าหมายเดียวกับ C แต่สั้นกว่า — ไม่ให้ AI ตีความว่า "ต้องทำงานละเอียดขึ้น" |
+
+เราให้ AI สองตัว (OpenAI Codex และ Claude Code) รันทั้ง 4 variant ละ 3 ครั้ง บน 3 codebase ได้แก่ repo เล็ก ๆ ของเราเอง, Flask (โปรเจกต์อังกฤษล้วนขนาดกลาง) และ election-live (แอป React จริงของนักพัฒนาไทย ที่มี string ภาษาไทยฝังอยู่ในไฟล์โค้ด JSX) รวม 72 รัน
 
 **สิ่งที่ค้นพบ**
 
@@ -46,7 +63,14 @@ If you use AI coding agents and write prompts in Thai, you've probably wondered:
 
 **How we tested it**
 
-We gave two tools (OpenAI Codex and Claude Code) the same repo analysis task four ways — **A** Thai only, **B** English only, **C** Thai with a verbose 4-bullet policy, **D** Thai with a one-line compact policy. We ran each variant 3 times on three codebases: a tiny repo (this one), a medium-sized English project (Flask), and a real Thai-developer app with Thai text embedded in source files (electinth/election-live). 72 runs total.
+| | Prompt | Hypothesis |
+|---|---|---|
+| **A** | Thai → Thai | Baseline: does the agent naturally carry Thai through its working context? |
+| **B** | English → English | Does a full language switch cut tokens? Pure language effect, no other variables. |
+| **C** | Thai + 4-bullet policy → Thai | Can an explicit "reason in English" instruction reduce overhead — or does more instruction = more work? |
+| **D** | Thai + 1-line hint → Thai | Same goal as C, minimal instruction: can one line work without signaling "be more thorough"? |
+
+We ran each variant 3 times on three codebases — a tiny repo (this one), a medium-sized English project (Flask), and a real Thai-developer app with Thai strings in source files (electinth/election-live) — using two tools (Codex and Claude Code). 72 runs total.
 
 **What we discovered**
 
