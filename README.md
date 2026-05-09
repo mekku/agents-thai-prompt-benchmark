@@ -13,37 +13,6 @@ A benchmark measuring how prompt language affects AI coding agent token usage �
 
 ---
 
-## Summary
-
-If you use AI coding agents and write prompts in Thai, you've probably wondered: does Thai cost more tokens than English? We ran a benchmark to find out — and the answer surprised us.
-
-**How we tested it**
-
-We gave two tools (OpenAI Codex and Claude Code) the same repo analysis task four ways — **A** Thai only, **B** English only, **C** Thai with a verbose 4-bullet policy, **D** Thai with a one-line compact policy. We ran each variant 3 times on three codebases: a tiny repo (this one), a medium-sized English project (Flask), and a real Thai-developer app with Thai text embedded in source files (electinth/election-live). 72 runs total.
-
-**What we discovered**
-
-The two tools behave completely differently — and the type of codebase matters too:
-
-- On **Codex with English-source repos**, Thai is slightly cheaper on small repos but English saves 32% at Flask scale. Adding any policy instruction makes things worse regardless of how it's written.
-- On **Codex with Thai-content repos** (election-live), the pattern flips: English is actually MORE expensive than Thai (+13%). When Thai strings are in the source files, a Thai prompt handles them more naturally.
-- On **Claude Code with English-source repos**, English is consistently half the token cost of Thai (46–52% savings). A single compact policy line cuts Thai's cost by 16%.
-- On **Claude Code with Thai-content repos**, language barely matters — A, B, and C all land within 2% of each other at ~44k tokens. The compact policy (D) backfires here (+70%), probably because telling it "don't carry Thai" causes it to open more files to understand Thai it's trying to skip.
-- The detailed 4-bullet policy (C) was consistently the worst or near-worst choice on every codebase and both tools.
-
-**Does cheaper mean worse output?**
-
-Not always — but sometimes yes. Thai prompts on Claude Code gave shorter, more concise answers. English prompts gave more detailed analysis with exact file names and line numbers. On larger codebases the gap was clearest: Thai got general advice like "this file is too big", English got specific facts like "`app.py` has 1,625 lines, `test_basic.py` has 1,970 lines." The one-line compact policy (D) hits the sweet spot for Claude Code on English-source repos — specific answers, Thai reply, lower cost than Thai alone. But it doesn't help on Thai-content repos.
-
-**Bottom line**
-
-| | English-source repo | Thai-annotated repo |
-|---|---|---|
-| Codex | English on large repos, Thai on small | Thai direct (English costs more) |
-| Claude Code | English saves ~50%; D saves 16% with Thai | Any variant works — skip D |
-
----
-
 ## สรุปภาพรวม
 
 ถ้าคุณใช้ AI coding agent และเขียน prompt ภาษาไทย คุณน่าจะเคยสงสัยว่า ภาษาไทยใช้ token มากกว่าภาษาอังกฤษไหม เราลองรัน benchmark ดู — และคำตอบที่ได้ไม่ตรงกับที่คิด
@@ -72,6 +41,37 @@ Not always — but sometimes yes. Thai prompts on Claude Code gave shorter, more
 |---|---|---|
 | Codex | อังกฤษ (repo ใหญ่), ไทย (repo เล็ก) | ไทยตรง (อังกฤษแพงกว่า) |
 | Claude Code | อังกฤษ (~50%); D ถ้าต้องใช้ไทย (-16%) | ใช้ได้ทุก variant ยกเว้น D |
+
+---
+
+## Summary
+
+If you use AI coding agents and write prompts in Thai, you've probably wondered: does Thai cost more tokens than English? We ran a benchmark to find out — and the answer surprised us.
+
+**How we tested it**
+
+We gave two tools (OpenAI Codex and Claude Code) the same repo analysis task four ways — **A** Thai only, **B** English only, **C** Thai with a verbose 4-bullet policy, **D** Thai with a one-line compact policy. We ran each variant 3 times on three codebases: a tiny repo (this one), a medium-sized English project (Flask), and a real Thai-developer app with Thai text embedded in source files (electinth/election-live). 72 runs total.
+
+**What we discovered**
+
+The two tools behave completely differently — and the type of codebase matters too:
+
+- On **Codex with English-source repos**, Thai is slightly cheaper on small repos but English saves 32% at Flask scale. Adding any policy instruction makes things worse regardless of how it's written.
+- On **Codex with Thai-content repos** (election-live), the pattern flips: English is actually MORE expensive than Thai (+13%). When Thai strings are in the source files, a Thai prompt handles them more naturally.
+- On **Claude Code with English-source repos**, English is consistently half the token cost of Thai (46–52% savings). A single compact policy line cuts Thai's cost by 16%.
+- On **Claude Code with Thai-content repos**, language barely matters — A, B, and C all land within 2% of each other at ~44k tokens. The compact policy (D) backfires here (+70%), probably because telling it "don't carry Thai" causes it to open more files to understand Thai it's trying to skip.
+- The detailed 4-bullet policy (C) was consistently the worst or near-worst choice on every codebase and both tools.
+
+**Does cheaper mean worse output?**
+
+Not always — but sometimes yes. Thai prompts on Claude Code gave shorter, more concise answers. English prompts gave more detailed analysis with exact file names and line numbers. On larger codebases the gap was clearest: Thai got general advice like "this file is too big", English got specific facts like "`app.py` has 1,625 lines, `test_basic.py` has 1,970 lines." The one-line compact policy (D) hits the sweet spot for Claude Code on English-source repos — specific answers, Thai reply, lower cost than Thai alone. But it doesn't help on Thai-content repos.
+
+**Bottom line**
+
+| | English-source repo | Thai-annotated repo |
+|---|---|---|
+| Codex | English on large repos, Thai on small | Thai direct (English costs more) |
+| Claude Code | English saves ~50%; D saves 16% with Thai | Any variant works — skip D |
 
 ---
 
