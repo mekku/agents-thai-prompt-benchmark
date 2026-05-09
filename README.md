@@ -1,15 +1,11 @@
 # Agents Thai Prompt Benchmark
 
-A benchmark measuring how prompt language affects AI coding agent token usage — across two tools, three codebases, and four variants.
-
-| Variant | Prompt | Reply | Design intent |
-|---|---|---|---|
-| **A** | Thai task only | Thai | Baseline — no language instruction |
-| **B** | English task only | English | Pure language switch |
-| **C** | Thai task + verbose 4-bullet "reason in English" policy | Thai | Explicit policy, more instruction |
-| **D** | Thai task + single-line compact policy | Thai | Minimal hint, same goal as C |
-
-**The question:** does prompt language — or a language policy — change how many tokens an agent uses to complete the same task?
+| | Prompt | Hypothesis |
+|---|---|---|
+| **A** | Thai → Thai | Baseline: does the agent naturally carry Thai through its working context? |
+| **B** | English → English | Does a full language switch cut tokens? Pure language effect, no other variables. |
+| **C** | Thai + 4-bullet policy → Thai | Can an explicit "reason in English" instruction reduce overhead — or does more instruction = more work? |
+| **D** | Thai + 1-line hint → Thai | Same goal as C, minimal instruction: can one line work without signaling "be more thorough"? |
 
 ---
 
